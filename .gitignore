@@ -1,0 +1,5 @@
+# Ignore Python venv
+*.venv
+
+# Ignore Pycache
+*__pycache__

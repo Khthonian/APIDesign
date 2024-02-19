@@ -1,12 +1,16 @@
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 
+apiRouter = APIRouter()
+
+
 origins = ["http://localhost:3000", "localhost:3000"]
 
 
+# Setup CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -16,13 +20,45 @@ app.add_middleware(
 )
 
 
+# Define a toy database
+USERS = [
+    {
+        "id": 1,
+        "name": "John Smith",
+        "credits": 1000,
+        "username": "JSmith10",
+    },
+    {
+        "id": 2,
+        "name": "Jack Smith",
+        "credits": 2000,
+        "username": "JSmith20",
+    },
+    {
+        "id": 3,
+        "name": "Jill Smith",
+        "credits": 3000,
+        "username": "JSmith30",
+    },
+    {
+        "id": 4,
+        "name": "Jane Smith",
+        "credits": 4000,
+        "username": "JSmith40",
+    },
+]
+
+
 # Define the root route
-@app.get("/", tags=["root"])
+@apiRouter.get("/", status_code=200)
 async def root():
     return {"message": "Hello, Charlie!"}
 
 
 # Define the test route
-@app.get("/test/{name}")
-async def test(name):
+@apiRouter.get("/test/{name}", status_code=200)
+async def test(name: str):
     return {f"Hello, {name}!"}
+
+
+app.include_router(apiRouter)

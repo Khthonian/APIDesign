@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -61,6 +63,18 @@ async def test(ID: int):
     response = [user for user in USERS if user["id"] == ID]
     if response:
         return response[0]
+
+
+# Define the search route
+@apiRouter.get("/search/", status_code=200)
+async def search(searchword: Optional[str] = None, maxResults: Optional[int] = 4):
+    if not searchword:
+        return {"results": USERS[:maxResults]}
+
+    response = filter(
+        lambda user: searchword.lower() in user["username"].lower(), USERS
+    )
+    return {"results": list(response)[:maxResults]}
 
 
 app.include_router(apiRouter)

@@ -55,10 +55,12 @@ async def root():
     return {"message": "Hello, Charlie!"}
 
 
-# Define the test route
-@apiRouter.get("/test/{name}", status_code=200)
-async def test(name: str):
-    return {f"Hello, {name}!"}
+# Define the user route
+@apiRouter.get("/user/{ID}", status_code=200)
+async def test(ID: int):
+    response = [user for user in USERS if user["id"] == ID]
+    if response:
+        return response[0]
 
 
 app.include_router(apiRouter)

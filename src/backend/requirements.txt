@@ -6,3 +6,4 @@ pillow
 websockets
 sqlalchemy
 databases
+jinja2

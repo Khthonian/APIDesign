@@ -1,10 +1,10 @@
 from typing import Optional
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import User, UserCreate, UserSearch
 
-app = FastAPI()
+app = FastAPI(title="Weather API", openapi_url="/openapi.json")
 
 
 apiRouter = APIRouter()
@@ -62,8 +62,9 @@ async def root():
 @apiRouter.get("/user/{ID}", status_code=200, response_model=User)
 async def getUser(*, ID: int):
     response = [user for user in USERS if user["id"] == ID]
-    if response:
-        return response[0]
+    if not response:
+        raise HTTPException(status_code=404, detail=f"User with ID {ID} not found!")
+    return response[0]
 
 
 # Define the search route

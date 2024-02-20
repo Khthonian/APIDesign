@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from schemas import User, UserCreate, UserSearch
 
 app = FastAPI()
 
@@ -58,16 +59,18 @@ async def root():
 
 
 # Define the user route
-@apiRouter.get("/user/{ID}", status_code=200)
-async def test(ID: int):
+@apiRouter.get("/user/{ID}", status_code=200, response_model=User)
+async def getUser(*, ID: int):
     response = [user for user in USERS if user["id"] == ID]
     if response:
         return response[0]
 
 
 # Define the search route
-@apiRouter.get("/search/", status_code=200)
-async def search(searchword: Optional[str] = None, maxResults: Optional[int] = 4):
+@apiRouter.get("/search/", status_code=200, response_model=UserSearch)
+async def searchUser(
+    *, searchword: Optional[str] = None, maxResults: Optional[int] = 4
+):
     if not searchword:
         return {"results": USERS[:maxResults]}
 
@@ -75,6 +78,21 @@ async def search(searchword: Optional[str] = None, maxResults: Optional[int] = 4
         lambda user: searchword.lower() in user["username"].lower(), USERS
     )
     return {"results": list(response)[:maxResults]}
+
+
+# Define the user create route
+@apiRouter.post("/user/", status_code=201, response_model=User)
+async def createUser(*, user: UserCreate):
+    newID = len(USERS) + 1
+    newEntry = User(
+        id=newID,
+        name=user.name,
+        credits=user.credits,
+        username=user.username,
+    )
+    USERS.append(newEntry.dict())
+
+    return newEntry
 
 
 app.include_router(apiRouter)

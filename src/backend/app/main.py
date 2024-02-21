@@ -1,14 +1,18 @@
 from pathlib import Path
-from typing import Any, Optional
 
-from fastapi import APIRouter, FastAPI, HTTPException, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
-from locationData import LOCATION
-from schemas.location import Location, LocationCreate, LocationSearch
+from sqlalchemy.orm import Session
+
+from . import crud, models, schemas
+from .database import SessionLocal, engine
+from .locationData import LOCATION
 
 BASE_PATH = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Weather API", openapi_url="/openapi.json")
 
@@ -26,49 +30,62 @@ app.add_middleware(
 )
 
 
+# Define a function to get the database
+def getDB():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 # Define the root route
 @apiRouter.get("/", status_code=200)
-async def root(request: Request):
+def root(request: Request):
     return TEMPLATES.TemplateResponse(
         "index.html",
         {"request": request, "locations": LOCATION},
     )
 
 
-# Define the user route
-@apiRouter.get("/location/{ID}", status_code=200, response_model=Location)
-async def getLocation(*, ID: int):
-    response = [location for location in LOCATION if location["id"] == ID]
-    if not response:
-        raise HTTPException(status_code=404, detail=f"Location with ID {ID} not found!")
-    return response[0]
+# Define the user creation route
+@apiRouter.post("/users/", status_code=200, response_model=schemas.User)
+def createUser(user: schemas.UserCreate, db: Session = Depends(getDB)):
+    dbUser = crud.getUserByEmail(db, email=user.email)
+    if dbUser:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.createUser(db=db, user=user)
 
 
-# Define the search route
-@apiRouter.get("/search/", status_code=200, response_model=LocationSearch)
-async def searchLocation(
-    *, searchword: Optional[str] = None, maxResults: Optional[int] = 4
+# Define the users read route
+@apiRouter.get("/users/", response_model=list[schemas.User])
+def readUsers(skip: int = 0, limit: int = 100, db: Session = Depends(getDB)):
+    users = crud.getUsers(db, skip=skip, limit=limit)
+    return users
+
+
+# Define the user read route
+@apiRouter.get("/users/{userId}", response_model=schemas.User)
+def readUser(userId: int, db: Session = Depends(getDB)):
+    dbUser = crud.getUser(db, userId=userId)
+    if dbUser is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return dbUser
+
+
+# Define the user update route
+@apiRouter.post("/users/{userId}/locations/", response_model=schemas.Location)
+def createLocationForUser(
+    userId: int, location: schemas.LocationCreate, db: Session = Depends(getDB)
 ):
-    if not searchword:
-        return {"results": LOCATION[:maxResults]}
-
-    response = filter(lambda user: searchword.lower() in user["name"].lower(), LOCATION)
-    return {"results": list(response)[:maxResults]}
+    return crud.createUserLocation(db=db, location=location, userId=userId)
 
 
-# Define the user create route
-@apiRouter.post("/location/", status_code=201, response_model=Location)
-async def createLocation(*, location: LocationCreate):
-    newID = len(LOCATION) + 1
-    newEntry = Location(
-        id=newID,
-        name=location.name,
-        weather=location.weather,
-        url=location.url,
-    )
-    LOCATION.append(newEntry.dict())
-
-    return newEntry
+# Define the location read route
+@apiRouter.get("/locations/", response_model=list[schemas.Location])
+def readLocations(skip: int = 0, limit: int = 100, db: Session = Depends(getDB)):
+    items = crud.getLocations(db, skip=skip, limit=limit)
+    return items
 
 
 app.include_router(apiRouter)

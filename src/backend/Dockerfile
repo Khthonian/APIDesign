@@ -14,7 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /backend/app
+WORKDIR /backend
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
@@ -42,8 +42,11 @@ USER appuser
 # Copy the source code into the container.
 COPY ./app /backend/app
 
+# Copy the database file into the container
+COPY ./weather.db /backend/weather.db
+
 # Expose the port that the application listens on.
 EXPOSE 5000
 
 # Run the application.
-CMD uvicorn 'main:app' --reload --host=0.0.0.0 --port=5000
+CMD uvicorn 'app.main:app' --reload --host=0.0.0.0 --port=5000

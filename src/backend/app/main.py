@@ -5,9 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
-from .database import SessionLocal, engine
-from .locationData import LOCATION
+from app.crud import crud
+from app.database.database import SessionLocal, engine
+from app.locationData import LOCATION
+from app.models import models
+from app.schemas import schemas
 
 BASE_PATH = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))

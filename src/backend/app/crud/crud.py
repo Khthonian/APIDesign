@@ -8,8 +8,8 @@ def getUser(db: Session, userId: int):
     return db.query(models.User).filter(models.User.id == userId).first()
 
 
-def getUserByEmail(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+def getUserByUsername(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
 
 
 def getUsers(db: Session, skip: int = 0, limit: int = 100):
@@ -19,9 +19,6 @@ def getUsers(db: Session, skip: int = 0, limit: int = 100):
 def createUser(db: Session, user: schemas.UserCreate):
     passwordHash = user.password + "THISHASHISFAKE"
     dbUser = models.User(
-        name=user.name,
-        credits=user.credits,
-        email=user.email,
         username=user.username,
         passwordHash=passwordHash,
     )

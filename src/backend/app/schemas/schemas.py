@@ -21,13 +21,10 @@ class Location(LocationBase):
 
 
 class UserBase(BaseModel):
-    email: EmailStr
+    username: str
 
 
 class UserCreate(UserBase):
-    name: str
-    credits: int = 2000
-    username: str
     password: str
 
 

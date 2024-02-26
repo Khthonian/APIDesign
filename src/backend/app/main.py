@@ -53,9 +53,9 @@ def root(request: Request):
 # Define the user creation route
 @apiRouter.post("/users/", status_code=200, response_model=schemas.User)
 def createUser(user: schemas.UserCreate, db: Session = Depends(getDB)):
-    dbUser = crud.getUserByEmail(db, email=user.email)
+    dbUser = crud.getUserByUsername(db, username=user.username)
     if dbUser:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Username already registered.")
     return crud.createUser(db=db, user=user)
 
 
@@ -71,7 +71,7 @@ def readUsers(skip: int = 0, limit: int = 100, db: Session = Depends(getDB)):
 def readUser(userId: int, db: Session = Depends(getDB)):
     dbUser = crud.getUser(db, userId=userId)
     if dbUser is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found.")
     return dbUser
 
 

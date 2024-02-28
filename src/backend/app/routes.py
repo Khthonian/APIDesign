@@ -1,13 +1,18 @@
+import os
 from datetime import datetime, timedelta
 from typing import Annotated
 
+import ipdata
 import requests
 from app import database, models, schemas
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+
+load_dotenv()
 
 router = APIRouter()
 
@@ -235,20 +240,22 @@ def add_user_location(
     db: db_dependency,
 ):
     # Step 1: Get user's coordinates from geolocation API (Example: IP Geolocation API)
-    ip_address = request.client.host
-    geolocation_api_key = ""
-    geolocation_url = f"https://api.ipgeolocation.io/ipgeo?apiKey={geolocation_api_key}&ip={ip_address}"
-
+    # ip_address = request.client.host
+    geolocation_api_key = os.getenv("GEOLOCATION_API_KEY")
+    ipdata.api_key = geolocation_api_key
     try:
-        response = requests.get(geolocation_url)
-        data = response.json()
-        latitude = data["latitude"]
-        longitude = data["longitude"]
+        # data = ipdata.lookup(ip_address)
+        data = ipdata.lookup()
+        latitude = data.latitude
+        longitude = data.longitude
+        city = data.city
+        country = data.country_name
+        ip = data.ip
     except Exception as e:
         return {"error": "Failed to retrieve user's location"}
 
     # Step 2: Fetch weather data from OpenWeather API using obtained coordinates
-    openweather_api_key = ""
+    openweather_api_key = os.getenv("OPENWEATHER_API_KEY")
     openweather_url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={openweather_api_key}"
 
     try:
@@ -273,7 +280,7 @@ def add_user_location(
     db.commit()
 
     # Step 4: Format the response
-    location_info = f"{location.city}, {location.country}"
+    location_info = f"{city}, {country}"
     weather_info = f"The weather in {location_info} is currently {temperature} degrees Celsius with {description}."
 
     # Assuming you have a database to store the location
@@ -288,7 +295,13 @@ def add_user_location(
     db.commit()
     db.refresh(db_location)
 
-    return {"message": "Location added successfully", "weather_info": weather_info}
+    return {
+        "message": "Location added successfully",
+        "weather_info": weather_info,
+        "latitude": latitude,
+        "longitude": longitude,
+        "ip": ip,
+    }
 
 
 # Logic to delete a location from user's saved locations

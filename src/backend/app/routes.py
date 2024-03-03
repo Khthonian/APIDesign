@@ -4,17 +4,21 @@ from typing import Annotated
 
 import ipdata
 import requests
-from app import database, models, schemas
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from openai import OpenAI
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+
+from app import database, models, schemas
 
 load_dotenv()
 
 router = APIRouter()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 SECRET_KEY = "testkey"
 ALGORITHM = "HS256"
@@ -235,7 +239,6 @@ def get_user_locations(current_user: user_dependency, db: db_dependency):
 @router.post("/api/users/locations")
 def add_user_location(
     request: Request,
-    location: schemas.LocationCreate,
     current_user: user_dependency,
     db: db_dependency,
 ):
@@ -281,12 +284,25 @@ def add_user_location(
 
     # Step 4: Format the response
     location_info = f"{city}, {country}"
-    weather_info = f"The weather in {location_info} is currently {temperature} degrees Celsius with {description}."
+    weather_info = f"The weather in {location_info} is currently {temperature - 273.15} degrees Celsius with {description}."
+
+    # Step 5: AI complete the message
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": f"You are a weather assistant, and I want you to extend the following sentence with a little message about what to wear: {weather_info}",
+            },
+        ],
+        max_tokens=100,
+    )
+    weather_info = completion.choices[0].message
 
     # Assuming you have a database to store the location
     db_location = models.Location(
-        city=location.city,
-        country=location.country,
+        city=city,
+        country=country,
         latitude=latitude,
         longitude=longitude,
         user_id=current_user["id"],

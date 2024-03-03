@@ -18,10 +18,10 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /backend
 
 # Copy requirements
-COPY requirements.txt .
+COPY pyproject.toml poetry.lock .
 
 # Install dependencies
-RUN pip install -r requirements.txt
+RUN pip install poetry && poetry install
 
 # Copy the local directory
 COPY . .
@@ -32,5 +32,8 @@ COPY weather.db /backend
 # Expose the port that the application listens on.
 EXPOSE 5000
 
+# Run database migrations with Alembic
+CMD poetry run alembic upgrade head
+
 # Run the application.
-CMD uvicorn 'main:app' --reload --host=0.0.0.0 --port=5000
+CMD poetry run uvicorn 'main:app' --reload --host=0.0.0.0 --port=5000

@@ -24,6 +24,8 @@ ipdata = "^4.0.7"
 python-dotenv = "^1.0.1"
 alembic = "^1.13.1"
 openai = "^1.13.3"
+ratelimit = "^2.2.1"
+slowapi = "^0.1.9"
 
 
 [build-system]

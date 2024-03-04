@@ -10,6 +10,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from openai import OpenAI
 from passlib.context import CryptContext
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from app import database, models, schemas
@@ -24,6 +26,7 @@ SECRET_KEY = "testkey"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE = 30
 
+limiter = Limiter(key_func=get_remote_address)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/token")
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -164,19 +167,6 @@ def delete_user_profile(current_user: user_dependency, db: db_dependency):
     return {"message": "User deleted successfully."}
 
 
-# Logic to retrieve weather information based on location
-@router.get("/api/weather")
-def get_weather(request: schemas.WeatherRequest, db: db_dependency):
-    # Here you would typically integrate with a weather API service
-    # and retrieve weather information based on the provided location
-    # For demonstration purposes, let's assume we return mock weather data
-    return {
-        "location": f"{request.location.city}, {request.location.country}",
-        "weather": "Sunny",
-        "temperature": "25°C",
-    }
-
-
 # Logic to retrieve user's credit balance
 @router.get("/api/credits")
 def get_user_credits(current_user: user_dependency, db: db_dependency):
@@ -205,25 +195,6 @@ def purchase_credits(
     return {"message": f"{amount} credits purchased successfully."}
 
 
-# Logic to deduct credits for weather requests
-@router.post("/api/credits/usage")
-def use_credits(
-    request: schemas.WeatherRequest, current_user: user_dependency, db: db_dependency
-):
-    db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
-        )
-    if db_user.credits < 1:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient credits."
-        )
-    db_user.credits -= 1
-    db.commit()
-    return {"message": "Credit used successfully."}
-
-
 # Logic to retrieve user's saved locations
 @router.get("/api/users/locations")
 def get_user_locations(current_user: user_dependency, db: db_dependency):
@@ -237,6 +208,7 @@ def get_user_locations(current_user: user_dependency, db: db_dependency):
 
 # Logic to add a new location to user's saved locations
 @router.post("/api/users/locations")
+@limiter.limit("2/minute")
 def add_user_location(
     request: Request,
     current_user: user_dependency,
@@ -297,12 +269,14 @@ def add_user_location(
         ],
         max_tokens=100,
     )
-    weather_info = completion.choices[0].message
+    weather_info = completion.choices[0].message.content
 
     # Assuming you have a database to store the location
     db_location = models.Location(
         city=city,
         country=country,
+        temperature=temperature,
+        description=weather_info,
         latitude=latitude,
         longitude=longitude,
         user_id=current_user["id"],

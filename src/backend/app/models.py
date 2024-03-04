@@ -22,6 +22,8 @@ class Location(Base):
     id = Column(Integer, primary_key=True, index=True)
     city = Column(String)
     country = Column(String)
+    temperature = Column(Float)
+    description = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
     user_id = Column(Integer, ForeignKey("users.id"))

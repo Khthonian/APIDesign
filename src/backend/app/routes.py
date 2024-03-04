@@ -34,7 +34,7 @@ ACCESS_TOKEN_EXPIRE = 30
 limiter = Limiter(key_func=get_remote_address)
 
 # Define authentication configs
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v2/users/token")
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 

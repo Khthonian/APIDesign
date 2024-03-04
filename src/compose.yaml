@@ -10,15 +10,13 @@ services:
       watch:
         - action: rebuild
           path: ./backend/
-#
-# Frontend
-#  client:
-#    build:
-#      context: ./frontend/
-#    ports:
-#      - 3000:80
-#    develop:
-#      watch:
-#        - action: rebuild
-#          path: ./frontend/
 
+  client:
+    build:
+      context: ./frontend/
+    ports:
+      - 3000:80
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend/

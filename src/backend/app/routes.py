@@ -16,22 +16,29 @@ from sqlalchemy.orm import Session
 
 from app import database, models, schemas
 
+# Load env files
 load_dotenv()
 
+# Initialise router
 router = APIRouter(prefix="/api/v2")
 
+# Initialise OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Define access token configs
 SECRET_KEY = "testkey"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE = 30
 
+# Define rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
+# Define authentication configs
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/token")
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+# Define a function to get the database
 def get_db():
     db = database.SessionLocal()
     try:
@@ -40,9 +47,11 @@ def get_db():
         db.close()
 
 
+# Define database dependency
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
+# Define a function to create an access token
 def create_access_token(username: str, id: int, expires: timedelta):
     encode = {"sub": username, "id": id}
     expire = datetime.utcnow() + expires
@@ -51,6 +60,7 @@ def create_access_token(username: str, id: int, expires: timedelta):
     return encoded_jwt
 
 
+# Define a function to create a refresh token
 def create_refresh_token(username: str, id: int, expires: timedelta):
     encode = {"sub": username, "id": id, "refresh": True}
     expire = datetime.utcnow() + expires
@@ -59,6 +69,7 @@ def create_refresh_token(username: str, id: int, expires: timedelta):
     return encoded_jwt
 
 
+# Define a function to get the current user
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -76,6 +87,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         )
 
 
+# Define a function to authenticate the user
 def authenticate_user(username: str, password: str, db):
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
@@ -87,11 +99,13 @@ def authenticate_user(username: str, password: str, db):
 
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
-# User Routes
+# Routes
 
 
+# Define a route to register a user
 @router.post("/users/register")
-async def register_user(db: db_dependency, user: schemas.UserCreate):
+@limiter.limit("3/minute")
+async def register_user(request: Request, db: db_dependency, user: schemas.UserCreate):
     db_user = models.User(
         username=user.username,
         email=user.email,
@@ -101,9 +115,13 @@ async def register_user(db: db_dependency, user: schemas.UserCreate):
     db.commit()
 
 
+# Define a route to login the user
 @router.post("/users/token", response_model=schemas.Token)
-async def login_for_access_token(
-    form: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
+@limiter.limit("3/minute")
+async def login(
+    request: Request,
+    form: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: db_dependency,
 ):
     user = authenticate_user(form.username, form.password, db)
     if not user:
@@ -114,8 +132,10 @@ async def login_for_access_token(
     return {"access_token": token, "token_type": "bearer"}
 
 
+# Define a route to get the current user's profile
 @router.get("/users/profile")
-def get_user_profile(user: user_dependency, db: db_dependency):
+@limiter.limit("5/minute")
+def get_user_profile(request: Request, user: user_dependency, db: db_dependency):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Authentication failed."
@@ -125,8 +145,11 @@ def get_user_profile(user: user_dependency, db: db_dependency):
     return {"User": db_user.username, "Credits": db_user.credits}
 
 
+# Define a route to update the current user's profile
 @router.put("/users/profile")
+@limiter.limit("3/minute")
 def update_user_profile(
+    request: Request,
     user: schemas.UserBase,
     current_user: user_dependency,
     db: db_dependency,
@@ -154,9 +177,12 @@ def update_user_profile(
     return {"User": user, "access_token": access_token, "refresh_token": refresh_token}
 
 
-# Logic to delete user profile based on token
+# Define a route to delete the current user's profile
 @router.delete("/users/profile")
-def delete_user_profile(current_user: user_dependency, db: db_dependency):
+@limiter.limit("3/minute")
+def delete_user_profile(
+    request: Request, current_user: user_dependency, db: db_dependency
+):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
         raise HTTPException(
@@ -167,9 +193,12 @@ def delete_user_profile(current_user: user_dependency, db: db_dependency):
     return {"message": "User deleted successfully."}
 
 
-# Logic to retrieve user's credit balance
+# Define a route to get the current user's credit balance
 @router.get("/credits")
-def get_user_credits(current_user: user_dependency, db: db_dependency):
+@limiter.limit("5/minute")
+def get_user_credits(
+    request: Request, current_user: user_dependency, db: db_dependency
+):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
         raise HTTPException(
@@ -178,9 +207,11 @@ def get_user_credits(current_user: user_dependency, db: db_dependency):
     return {"credits": db_user.credits}
 
 
-# Logic to purchase credits for the user
+# Define a route for the user to purchase credits
 @router.post("/credits/purchase")
+@limiter.limit("3/minute")
 def purchase_credits(
+    request: Request,
     amount: int,
     current_user: user_dependency,
     db: db_dependency,
@@ -195,9 +226,12 @@ def purchase_credits(
     return {"message": f"{amount} credits purchased successfully."}
 
 
-# Logic to retrieve user's saved locations
+# Define a route to get the current user's locations
 @router.get("/users/locations")
-def get_user_locations(current_user: user_dependency, db: db_dependency):
+@limiter.limit("5/minute")
+def get_user_locations(
+    request: Request, current_user: user_dependency, db: db_dependency
+):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
         raise HTTPException(
@@ -206,7 +240,7 @@ def get_user_locations(current_user: user_dependency, db: db_dependency):
     return db_user.locations
 
 
-# Logic to add a new location to user's saved locations
+# Define the route to add the current user's current location
 @router.post("/users/locations")
 @limiter.limit("2/minute")
 def add_user_location(
@@ -294,9 +328,11 @@ def add_user_location(
     }
 
 
-# Logic to delete a location from user's saved locations
+# Define a route to delete one of the current user's locations
 @router.delete("/users/locations/{location_id}")
+@limiter.limit("3/minute")
 def delete_user_location(
+    request: Request,
     location_id: int,
     current_user: user_dependency,
     db: db_dependency,

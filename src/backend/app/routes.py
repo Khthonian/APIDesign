@@ -18,7 +18,7 @@ from app import database, models, schemas
 
 load_dotenv()
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v2")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -90,7 +90,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 # User Routes
 
 
-@router.post("/api/users/register")
+@router.post("/users/register")
 async def register_user(db: db_dependency, user: schemas.UserCreate):
     db_user = models.User(
         username=user.username,
@@ -101,7 +101,7 @@ async def register_user(db: db_dependency, user: schemas.UserCreate):
     db.commit()
 
 
-@router.post("/api/users/token", response_model=schemas.Token)
+@router.post("/users/token", response_model=schemas.Token)
 async def login_for_access_token(
     form: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
 ):
@@ -114,7 +114,7 @@ async def login_for_access_token(
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.get("/api/users/profile")
+@router.get("/users/profile")
 def get_user_profile(user: user_dependency, db: db_dependency):
     if not user:
         raise HTTPException(
@@ -125,7 +125,7 @@ def get_user_profile(user: user_dependency, db: db_dependency):
     return {"User": db_user.username, "Credits": db_user.credits}
 
 
-@router.put("/api/users/profile")
+@router.put("/users/profile")
 def update_user_profile(
     user: schemas.UserBase,
     current_user: user_dependency,
@@ -155,7 +155,7 @@ def update_user_profile(
 
 
 # Logic to delete user profile based on token
-@router.delete("/api/users/profile")
+@router.delete("/users/profile")
 def delete_user_profile(current_user: user_dependency, db: db_dependency):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
@@ -168,7 +168,7 @@ def delete_user_profile(current_user: user_dependency, db: db_dependency):
 
 
 # Logic to retrieve user's credit balance
-@router.get("/api/credits")
+@router.get("/credits")
 def get_user_credits(current_user: user_dependency, db: db_dependency):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
@@ -179,7 +179,7 @@ def get_user_credits(current_user: user_dependency, db: db_dependency):
 
 
 # Logic to purchase credits for the user
-@router.post("/api/credits/purchase")
+@router.post("/credits/purchase")
 def purchase_credits(
     amount: int,
     current_user: user_dependency,
@@ -196,7 +196,7 @@ def purchase_credits(
 
 
 # Logic to retrieve user's saved locations
-@router.get("/api/users/locations")
+@router.get("/users/locations")
 def get_user_locations(current_user: user_dependency, db: db_dependency):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
@@ -207,7 +207,7 @@ def get_user_locations(current_user: user_dependency, db: db_dependency):
 
 
 # Logic to add a new location to user's saved locations
-@router.post("/api/users/locations")
+@router.post("/users/locations")
 @limiter.limit("2/minute")
 def add_user_location(
     request: Request,
@@ -295,7 +295,7 @@ def add_user_location(
 
 
 # Logic to delete a location from user's saved locations
-@router.delete("/api/users/locations/{location_id}")
+@router.delete("/users/locations/{location_id}")
 def delete_user_location(
     location_id: int,
     current_user: user_dependency,

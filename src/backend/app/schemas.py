@@ -16,7 +16,7 @@ class User(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LocationBase(BaseModel):
@@ -33,7 +33,7 @@ class Location(LocationBase):
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class WeatherRequest(BaseModel):

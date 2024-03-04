@@ -10,7 +10,11 @@ from app.routes import router as api_router
 Base.metadata.create_all(bind=engine)
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Weather API",
+    version="2.2.0",
+    description="An API to receive weather information and present it to the user with AI input.",
+)
 
 
 app.state.limiter = limiter

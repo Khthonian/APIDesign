@@ -104,7 +104,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 # Define a route to register a user
 @router.post("/users/register")
-@limiter.limit("3/minute")
+@limiter.limit("20/minute")
 async def register_user(request: Request, db: db_dependency, user: schemas.UserCreate):
     db_user = models.User(
         username=user.username,
@@ -117,7 +117,7 @@ async def register_user(request: Request, db: db_dependency, user: schemas.UserC
 
 # Define a route to login the user
 @router.post("/users/token", response_model=schemas.Token)
-@limiter.limit("3/minute")
+@limiter.limit("20/minute")
 async def login(
     request: Request,
     form: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -134,7 +134,7 @@ async def login(
 
 # Define a route to get the current user's profile
 @router.get("/users/profile")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def get_user_profile(request: Request, user: user_dependency, db: db_dependency):
     if not user:
         raise HTTPException(
@@ -147,7 +147,7 @@ def get_user_profile(request: Request, user: user_dependency, db: db_dependency)
 
 # Define a route to update the current user's profile
 @router.put("/users/profile")
-@limiter.limit("3/minute")
+@limiter.limit("5/minute")
 def update_user_profile(
     request: Request,
     user: schemas.UserBase,
@@ -179,7 +179,7 @@ def update_user_profile(
 
 # Define a route to delete the current user's profile
 @router.delete("/users/profile")
-@limiter.limit("3/minute")
+@limiter.limit("5/minute")
 def delete_user_profile(
     request: Request, current_user: user_dependency, db: db_dependency
 ):
@@ -209,7 +209,7 @@ def get_user_credits(
 
 # Define a route for the user to purchase credits
 @router.post("/credits/purchase")
-@limiter.limit("3/minute")
+@limiter.limit("5/minute")
 def purchase_credits(
     request: Request,
     amount: int,
@@ -322,6 +322,7 @@ def add_user_location(
     return {
         "message": "Location added successfully",
         "weather_info": weather_info,
+        "temperature": temperature,
         "latitude": latitude,
         "longitude": longitude,
         "ip": ip,

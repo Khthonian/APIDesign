@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
@@ -8,6 +8,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [error, setError] = useState("");
+  const [userLocations, setUserLocations] = useState([]);
 
   // Function to handle user registration
   const registerUser = async () => {
@@ -52,6 +53,7 @@ function App() {
       setLoggedInUser(response.data);
 
       await displayCurrentUser();
+      await fetchUserLocations(); // Fetch user locations after login
     } catch (error) {
       console.error("Login failed:", error.response.data);
     }
@@ -77,6 +79,44 @@ function App() {
       setError("Failed to fetch current user.");
     }
   };
+
+  // Function to fetch user locations
+  const fetchUserLocations = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/v2/users/locations",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        },
+      );
+      console.log("User locations:", response.data);
+      setUserLocations(response.data);
+    } catch (error) {
+      console.error("Failed to fetch user locations:", error.response.data);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    
+    const year = date.getFullYear();
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
+    const day = ("0" + date.getDate()).slice(-2);
+    const hours = ("0" + date.getHours()).slice(-2);
+    const minutes = ("0" + date.getMinutes()).slice(-2);
+    const seconds = ("0" + date.getSeconds()).slice(-2);
+  
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
+  // Run this effect when the component mounts
+  useEffect(() => {
+    if (loggedInUser) {
+      fetchUserLocations();
+    }
+  }, [loggedInUser]);
 
   return (
     <div>
@@ -123,6 +163,29 @@ function App() {
         <div>
           <h2>Welcome, {loggedInUser.User}</h2>
           <h2>Credits: {loggedInUser.Credits}</h2>
+          <h2>User Locations:</h2>
+          <table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={{ border: "1px solid black" }}>Date</th>
+                <th style={{ border: "1px solid black" }}>City</th>
+                <th style={{ border: "1px solid black" }}>Country</th>
+                <th style={{ border: "1px solid black" }}>Temperature</th>
+                <th style={{ border: "1px solid black" }}>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userLocations.map((location) => (
+                <tr key={location.id}>
+                  <td style={{ border: "1px solid black" }}>{formatDate(location.date)}</td>
+                  <td style={{ border: "1px solid black" }}>{location.city}</td>
+                  <td style={{ border: "1px solid black" }}>{location.country}</td>
+                  <td style={{ border: "1px solid black" }}>{location.temperature}</td>
+                  <td style={{ border: "1px solid black" }}>{location.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <p>Please register or login.</p>

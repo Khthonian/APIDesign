@@ -26,6 +26,7 @@ alembic = "^1.13.1"
 openai = "^1.13.3"
 ratelimit = "^2.2.1"
 slowapi = "^0.1.9"
+sqlalchemy-utils = "^0.41.2"
 
 
 [build-system]

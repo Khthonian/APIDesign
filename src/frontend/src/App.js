@@ -12,6 +12,7 @@ function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [userLocations, setUserLocations] = useState([]);
   const [purchaseAmount, setPurchaseAmount] = useState(0);
 
@@ -27,9 +28,14 @@ function App() {
         },
       );
       console.log("User registered successfully:", response.data);
-      // You can add additional logic after successful registration
+      setSuccessMessage("Registration successful."); // Set success message
+      setTimeout(() => {
+        setSuccessMessage("Registration successful."); // Clear success message after 10 seconds
+      }, 10000);
     } catch (error) {
-      setError("Registration failed. Please try again.");
+      setTimeout(() => {
+        setError("Registration failed. Please try again.");
+      }, 10000)
     }
   };
 
@@ -365,6 +371,7 @@ function App() {
         <p>Please register or login.</p>
       )}
       {error && <p style={{ color: "red" }}>{error}</p>}
+      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
     </div>
   );
 }

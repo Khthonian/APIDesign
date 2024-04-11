@@ -150,7 +150,7 @@ def get_user_profile(request: Request, user: user_dependency, db: db_dependency)
 @limiter.limit("20/minute")
 def update_user_profile(
     request: Request,
-    user: schemas.UserBase,
+    user: schemas.UserUpdate,
     current_user: user_dependency,
     db: db_dependency,
 ):
@@ -160,9 +160,29 @@ def update_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
-    # Update user profile in the database
-    db_user.username = user.username
-    db_user.email = user.email
+    # Check if the new username is unique
+    if user.username is not None and user.username != db_user.username:
+        existing_user = (
+            db.query(models.User).filter(models.User.username == user.username).first()
+        )
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already exists.",
+            )
+        db_user.username = user.username
+
+    # Check if the new email is unique
+    if user.email is not None and user.email != db_user.email:
+        existing_user = (
+            db.query(models.User).filter(models.User.email == user.email).first()
+        )
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists."
+            )
+        db_user.email = user.email
+
     db.commit()
 
     # Create new access and refresh tokens

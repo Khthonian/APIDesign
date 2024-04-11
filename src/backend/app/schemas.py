@@ -1,11 +1,11 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class UserBase(BaseModel):
     username: str
-    email: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -17,6 +17,11 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
 class LocationBase(BaseModel):

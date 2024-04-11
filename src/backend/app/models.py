@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy_utils import EmailType
 
 from app.database import Base
 
@@ -11,7 +12,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
+    email = Column(EmailType, unique=True, index=True)
     credits = Column(Integer, default=2000)
     hashed_password = Column(String)
 

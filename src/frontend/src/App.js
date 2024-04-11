@@ -200,6 +200,35 @@ function App() {
     }
   };
 
+  // Function to update user profile
+  const updateUserProfile = async () => {
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/v2/users/profile",
+        {
+          username: username,
+          email: email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+
+      console.log("User profile updated successfully:", response.data);
+
+      // Update loggedInUser state with updated user profile
+      setLoggedInUser(response.data.User);
+      await displayCurrentUser();
+      await fetchUserLocations(); 
+    } catch (error) {
+      console.error("Failed to update user profile:", error.response.data);
+      setError("Failed to update user profile. Please try again.");
+    }
+  };
+
+  // Function to delete user profile
   const deleteUserProfile = async () => {
     try {
       await axios.delete(
@@ -268,6 +297,22 @@ function App() {
         <button onClick={loginUser}>Login</button>
         {loggedInUser && <button onClick={logoutUser}>Logout</button>}
         {loggedInUser && <button onClick={deleteUserProfile}>Delete Account</button>}
+      </div>
+      <div>
+        <h2>Update Profile</h2>
+        <input
+          type="text"
+          placeholder="New Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="email"
+          placeholder="New Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <button onClick={updateUserProfile}>Update Profile</button>
       </div>
       {loggedInUser ? (
         <div>

@@ -59,6 +59,12 @@ function App() {
     }
   };
 
+  // Function to handle user logout
+  const logoutUser = () => {
+    localStorage.removeItem("accessToken"); // Clear access token
+    setLoggedInUser(null); // Reset loggedInUser state
+  };
+
   // Function to display the currently logged-in user
   const displayCurrentUser = async () => {
     try {
@@ -111,6 +117,58 @@ function App() {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
 
+  // Function to convert temperature from Kelvin to Celsius and format
+  const formatTemperature = (kelvin) => {
+    // Convert Kelvin to Celsius
+    const celsius = kelvin - 273.15;
+    // Round to two decimal places
+    const roundedCelsius = celsius.toFixed(2);
+    // Add Celsius symbol
+    return `${roundedCelsius} °C`;
+  };
+
+  // Function to refresh user locations
+  const refreshUserLocations = async () => {
+    await fetchUserLocations();
+  };
+
+  // Function to handle "Get Weather" button click
+  const handleGetWeather = async () => {
+    try {
+      await axios.post(
+        "http://localhost:5000/api/v2/users/locations",
+        null, // You can pass any data you want to post here
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      console.log("Weather data posted successfully.");
+      refreshUserLocations(); // Refresh the table after posting
+    } catch (error) {
+      console.error("Failed to post weather data:", error.response.data);
+    }
+  };
+
+  // Function to handle location deletion
+  const deleteLocation = async (locationId) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/v2/users/locations/${locationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      console.log("Location deleted successfully.");
+      refreshUserLocations(); // Refresh the table after deleting
+    } catch (error) {
+      console.error("Failed to delete location:", error.response.data);
+    }
+  };
+
   // Run this effect when the component mounts
   useEffect(() => {
     if (loggedInUser) {
@@ -158,12 +216,14 @@ function App() {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button onClick={loginUser}>Login</button>
+        {loggedInUser && <button onClick={logoutUser}>Logout</button>}
       </div>
       {loggedInUser ? (
         <div>
           <h2>Welcome, {loggedInUser.User}</h2>
           <h2>Credits: {loggedInUser.Credits}</h2>
           <h2>User Locations:</h2>
+          <button onClick={handleGetWeather}>Get Weather</button> {/* Button to get weather */}
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
@@ -177,11 +237,14 @@ function App() {
             <tbody>
               {userLocations.map((location) => (
                 <tr key={location.id}>
-                  <td style={{ border: "1px solid black" }}>{formatDate(location.date)}</td>
+                  <td style={{ border: "1px solid black" }}>{formatDate(location.timestamp)}</td>
                   <td style={{ border: "1px solid black" }}>{location.city}</td>
                   <td style={{ border: "1px solid black" }}>{location.country}</td>
-                  <td style={{ border: "1px solid black" }}>{location.temperature}</td>
+                  <td style={{ border: "1px solid black" }}>{formatTemperature(location.temperature)}</td>
                   <td style={{ border: "1px solid black" }}>{location.description}</td>
+                  <td style={{ border: "1px solid black" }}>
+                    <button onClick={() => deleteLocation(location.id)}>Delete</button>
+                  </td>
                 </tr>
               ))}
             </tbody>

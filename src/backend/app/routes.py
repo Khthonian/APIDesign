@@ -188,6 +188,8 @@ def delete_user_profile(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
+
+    db.query(models.Location).filter(models.Location.user_id == db_user.id).delete()
     db.delete(db_user)
     db.commit()
     return {"message": "User deleted successfully."}

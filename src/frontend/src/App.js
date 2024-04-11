@@ -9,6 +9,7 @@ function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [error, setError] = useState("");
   const [userLocations, setUserLocations] = useState([]);
+  const [purchaseAmount, setPurchaseAmount] = useState(0);
 
   // Function to handle user registration
   const registerUser = async () => {
@@ -63,6 +64,35 @@ function App() {
   const logoutUser = () => {
     localStorage.removeItem("accessToken"); // Clear access token
     setLoggedInUser(null); // Reset loggedInUser state
+  };
+
+  // Function to handle credit purchase
+  const purchaseCredits = async () => {
+    try {
+      // Check if the purchase amount is within the valid range (1-500)
+      if (purchaseAmount < 1 || purchaseAmount > 500) {
+        setError("Please enter a valid purchase amount between 1 and 500.");
+        return;
+      }
+
+      // Send POST request to purchase credits
+      await axios.post(
+        `http://localhost:5000/api/v2/credits/purchase?amount=${purchaseAmount}`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+
+      console.log("Credits purchased successfully.");
+      setError(""); // Clear any previous error
+      await displayCurrentUser(); // Refresh the credit amount
+    } catch (error) {
+      console.error("Failed to purchase credits:", error.response.data);
+      setError("Failed to purchase credits. Please try again.");
+    }
   };
 
   // Function to display the currently logged-in user
@@ -145,6 +175,7 @@ function App() {
         }
       );
       console.log("Weather data posted successfully.");
+      await displayCurrentUser();
       refreshUserLocations(); // Refresh the table after posting
     } catch (error) {
       console.error("Failed to post weather data:", error.response.data);
@@ -166,6 +197,25 @@ function App() {
       refreshUserLocations(); // Refresh the table after deleting
     } catch (error) {
       console.error("Failed to delete location:", error.response.data);
+    }
+  };
+
+  const deleteUserProfile = async () => {
+    try {
+      await axios.delete(
+        "http://localhost:5000/api/v2/users/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+  
+      console.log("User profile deleted successfully.");
+      setLoggedInUser(null); // Reset loggedInUser state after deletion
+    } catch (error) {
+      console.error("Failed to delete user profile:", error.response.data);
+      setError("Failed to delete user profile. Please try again.");
     }
   };
 
@@ -217,11 +267,23 @@ function App() {
         />
         <button onClick={loginUser}>Login</button>
         {loggedInUser && <button onClick={logoutUser}>Logout</button>}
+        {loggedInUser && <button onClick={deleteUserProfile}>Delete Account</button>}
       </div>
       {loggedInUser ? (
         <div>
           <h2>Welcome, {loggedInUser.User}</h2>
           <h2>Credits: {loggedInUser.Credits}</h2>
+          <div>
+            <input
+              type="number"
+              placeholder="Enter amount (1-500)"
+              value={purchaseAmount}
+              onChange={(e) => setPurchaseAmount(e.target.value)}
+              min="1"
+              max="500"
+            />
+            <button onClick={purchaseCredits}>Submit</button>
+          </div>
           <h2>User Locations:</h2>
           <button onClick={handleGetWeather}>Get Weather</button> {/* Button to get weather */}
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
@@ -243,8 +305,8 @@ function App() {
                   <td style={{ border: "1px solid black" }}>{formatTemperature(location.temperature)}</td>
                   <td style={{ border: "1px solid black" }}>{location.description}</td>
                   <td style={{ border: "1px solid black" }}>
-                    <button onClick={() => deleteLocation(location.id)}>Delete</button>
-                  </td>
+        <button onClick={() => deleteLocation(location.id)}>Delete</button>
+      </td>
                 </tr>
               ))}
             </tbody>

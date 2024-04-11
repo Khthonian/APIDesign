@@ -147,7 +147,7 @@ def get_user_profile(request: Request, user: user_dependency, db: db_dependency)
 
 # Define a route to update the current user's profile
 @router.put("/users/profile")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def update_user_profile(
     request: Request,
     user: schemas.UserBase,
@@ -179,7 +179,7 @@ def update_user_profile(
 
 # Define a route to delete the current user's profile
 @router.delete("/users/profile")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def delete_user_profile(
     request: Request, current_user: user_dependency, db: db_dependency
 ):
@@ -195,7 +195,7 @@ def delete_user_profile(
 
 # Define a route to get the current user's credit balance
 @router.get("/credits")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def get_user_credits(
     request: Request, current_user: user_dependency, db: db_dependency
 ):
@@ -209,7 +209,7 @@ def get_user_credits(
 
 # Define a route for the user to purchase credits
 @router.post("/credits/purchase")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 def purchase_credits(
     request: Request,
     amount: int,
@@ -228,7 +228,7 @@ def purchase_credits(
 
 # Define a route to get the current user's locations
 @router.get("/users/locations")
-@limiter.limit("5/minute")
+@limiter.limit("10/minute")
 def get_user_locations(
     request: Request, current_user: user_dependency, db: db_dependency
 ):
@@ -242,7 +242,7 @@ def get_user_locations(
 
 # Define the route to add the current user's current location
 @router.post("/users/locations")
-@limiter.limit("2/minute")
+@limiter.limit("10/minute")
 def add_user_location(
     request: Request,
     current_user: user_dependency,
@@ -331,7 +331,7 @@ def add_user_location(
 
 # Define a route to delete one of the current user's locations
 @router.delete("/users/locations/{location_id}")
-@limiter.limit("3/minute")
+@limiter.limit("20/minute")
 def delete_user_location(
     request: Request,
     location_id: int,

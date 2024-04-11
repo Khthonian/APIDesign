@@ -3,9 +3,13 @@ import axios from "axios";
 
 function App() {
   // State variables
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [updateUsername, setUpdateUsername] = useState("");
+  const [updateEmail, setUpdateEmail] = useState("");
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [error, setError] = useState("");
   const [userLocations, setUserLocations] = useState([]);
@@ -17,9 +21,9 @@ function App() {
       const response = await axios.post(
         "http://localhost:5000/api/v2/users/register",
         {
-          username: username,
-          email: email,
-          password: password,
+          username: registerUsername,
+          email: registerEmail,
+          password: registerPassword,
         },
       );
       console.log("User registered successfully:", response.data);
@@ -33,8 +37,8 @@ function App() {
   const loginUser = async () => {
     try {
       const formData = new FormData();
-      formData.append("username", username);
-      formData.append("password", password);
+      formData.append("username", loginUsername);
+      formData.append("password", loginPassword);
 
       const response = await axios.post(
         "http://localhost:5000/api/v2/users/token",
@@ -206,8 +210,8 @@ function App() {
       const response = await axios.put(
         "http://localhost:5000/api/v2/users/profile",
         {
-          username: username,
-          email: email,
+          username: updateUsername,
+          email: updateEmail,
         },
         {
           headers: {
@@ -263,20 +267,20 @@ function App() {
         <input
           type="text"
           placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={registerUsername}
+          onChange={(e) => setRegisterUsername(e.target.value)}
         />
         <input
           type="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={registerEmail}
+          onChange={(e) => setRegisterEmail(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={registerPassword}
+          onChange={(e) => setRegisterPassword(e.target.value)}
         />
         <button onClick={registerUser}>Register</button>
       </div>
@@ -285,14 +289,14 @@ function App() {
         <input
           type="text"
           placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={loginUsername}
+          onChange={(e) => setLoginUsername(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={loginPassword}
+          onChange={(e) => setLoginPassword(e.target.value)}
         />
         <button onClick={loginUser}>Login</button>
         {loggedInUser && <button onClick={logoutUser}>Logout</button>}
@@ -303,14 +307,14 @@ function App() {
         <input
           type="text"
           placeholder="New Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={updateUsername}
+          onChange={(e) => setUpdateUsername(e.target.value)}
         />
         <input
           type="email"
           placeholder="New Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={updateEmail}
+          onChange={(e) => setUpdateEmail(e.target.value)}
         />
         <button onClick={updateUserProfile}>Update Profile</button>
       </div>

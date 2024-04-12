@@ -3,7 +3,6 @@ name: Frontend CI/CD
 on:
   push:
     branches:
-      - main
       - dev
 
 jobs:

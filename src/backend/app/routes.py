@@ -182,8 +182,14 @@ def update_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
+    if user.username == db_user.username or user.email == db_user.email:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Cannot use current details.",
+        )
+
     # Check if the new username is unique
-    if user.username is not None and user.username != db_user.username:
+    if user.username is not None:
         existing_user = (
             db.query(models.User).filter(models.User.username == user.username).first()
         )
@@ -195,7 +201,7 @@ def update_user_profile(
         db_user.username = user.username
 
     # Check if the new email is unique
-    if user.email is not None and user.email != db_user.email:
+    if user.email is not None:
         existing_user = (
             db.query(models.User).filter(models.User.email == user.email).first()
         )
@@ -209,11 +215,12 @@ def update_user_profile(
     db.commit()
 
     # Create new access and refresh tokens
+    db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     access_token = create_access_token(
-        user.username, current_user["id"], timedelta(minutes=30)
+        db_user.username, current_user["id"], timedelta(minutes=30)
     )
     refresh_token = create_refresh_token(
-        user.username, current_user["id"], timedelta(days=7)
+        db_user.username, current_user["id"], timedelta(days=7)
     )
 
     # Return updated user profile along with new tokens

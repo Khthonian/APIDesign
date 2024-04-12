@@ -1,0 +1,67 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install poetry
+        run: |
+          pip install poetry
+
+      - name: Configure poetry
+        run: |
+          python -m poetry config virtualenvs.in-project true
+
+      - name: Install dependencies
+        run: |
+          cd src/backend
+          poetry install --no-root
+
+      - name: Set API key as environment variable
+        env:
+          ALGORITHM: ${{ secrets.ALGORITHM }}
+          GEOLOCATION_API_KEY: ${{ secrets.GEOLOCATION_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          echo "ALGORITHM=$ALGORITHM" >> $GITHUB_ENV
+          echo "GEOLOCATION_API_KEY=$GEOLOCATION_API_KEY" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+          echo "OPENWEATHER_API_KEY=$OPENWEATHER_API_KEY" >> $GITHUB_ENV
+          echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: |
+          cd src/backend
+          poetry run pytest
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/backend
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-design-backend:latest

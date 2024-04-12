@@ -36,4 +36,4 @@ EXPOSE 5000
 CMD poetry run alembic upgrade head
 
 # Run the application.
-CMD poetry run uvicorn 'main:app' --reload --host=0.0.0.0 --port=5000
+CMD poetry run uvicorn 'app.main:app' --reload --host=0.0.0.0 --port=5000

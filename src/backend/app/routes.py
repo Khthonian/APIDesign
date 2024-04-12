@@ -113,6 +113,7 @@ async def register_user(request: Request, db: db_dependency, user: schemas.UserC
     )
     db.add(db_user)
     db.commit()
+    return {"message": "User registered successfully."}
 
 
 # Define a route to login the user

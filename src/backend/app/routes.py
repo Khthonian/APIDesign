@@ -106,11 +106,32 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 @router.post("/users/register")
 @limiter.limit("20/minute")
 async def register_user(request: Request, db: db_dependency, user: schemas.UserCreate):
+    # Check if the new username is unique
+    existing_user = (
+        db.query(models.User).filter(models.User.username == user.username).first()
+    )
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Username already registered.",
+        )
+
+    # Check if the new email is unique
+    existing_user = (
+        db.query(models.User).filter(models.User.email == user.email).first()
+    )
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Email already registered.",
+        )
+
     db_user = models.User(
         username=user.username,
         email=user.email,
         hashed_password=bcrypt_context.hash(user.password),
     )
+
     db.add(db_user)
     db.commit()
     return {"message": "User registered successfully."}
@@ -130,17 +151,17 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user."
         )
     token = create_access_token(user.username, user.id, timedelta(minutes=30))
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "message": "User successfully logged in.",
+        "access_token": token,
+        "token_type": "bearer",
+    }
 
 
 # Define a route to get the current user's profile
 @router.get("/users/profile")
 @limiter.limit("20/minute")
 def get_user_profile(request: Request, user: user_dependency, db: db_dependency):
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Authentication failed."
-        )
     db_user = db.query(models.User).filter(models.User.id == user["id"]).first()
 
     return {"User": db_user.username, "Credits": db_user.credits}
@@ -168,7 +189,7 @@ def update_user_profile(
         )
         if existing_user:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Username already exists.",
             )
         db_user.username = user.username
@@ -180,7 +201,8 @@ def update_user_profile(
         )
         if existing_user:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists."
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Email already exists.",
             )
         db_user.email = user.email
 

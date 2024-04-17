@@ -280,12 +280,6 @@ def get_user_locations(
     return {"locations": db_user.locations}
 
 
-@router.get("/items/{item_id}")
-def read_root(item_id: str, request: Request):
-    client_host = request.client.host
-    return {"client_host": client_host, "item_id": item_id}
-
-
 # Define the route to add the current user's current location
 @router.post("/users/locations", response_model=schemas.SuccessMessage)
 @limiter.limit("10/minute")

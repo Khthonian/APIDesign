@@ -20,6 +20,20 @@ class User(UserBase):
 
 
 class UserUpdate(BaseModel):
+    user: str
+
+
+class UserRefresh(BaseModel):
+    user: UserUpdate
+    access_token: str
+    refresh_token: str
+
+
+class UserBalance(BaseModel):
+    credits: int
+
+
+class UserAccount(UserBalance):
     username: str
 
 
@@ -44,7 +58,10 @@ class WeatherRequest(BaseModel):
     location: LocationBase
 
 
-class Token(BaseModel):
+class SuccessMessage(BaseModel):
     message: str
+
+
+class Token(SuccessMessage):
     access_token: str
     token_type: str

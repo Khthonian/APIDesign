@@ -318,7 +318,7 @@ function App() {
       </div>
       {loggedInUser ? (
         <div>
-          <h2>Welcome, {loggedInUser.user}</h2>
+          <h2>Welcome, {loggedInUser.username}</h2>
           <h2>Credits: {loggedInUser.credits}</h2>
           <div>
             <input

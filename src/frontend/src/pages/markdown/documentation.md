@@ -60,19 +60,17 @@ http://localhost:5000/api/v2/users/register
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `message`
+      - Type: String
 - `422 - Validation Error`
   - Response schema: `application/json`
     - `detail`
       - `detail.loc`
         - Type: Array of string or integers
-        - Required: Yes
       - `detail.msg`
         - Type: String
-        - Required: Yes
       - `detail.type`
         - Type: String
-        - Required: Yes
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -135,25 +133,19 @@ http://localhost:5000/api/v2/users/login
   - Response schema: `application/json`
     - `message`
       - Type: String
-      - Required: Yes
     - `access_token`
       - Type: String
-      - Required: Yes
     - `token_type`
       - Type: String
-      - Required: Yes
 - `422 - Validation Error`
   - Response schema: `application/json`
     - `detail`
       - `detail.loc`
-        - Type: Array of string or integers
-        - Required: Yes
+        - Type: Array of strings or integers
       - `detail.msg`
         - Type: String
-        - Required: Yes
       - `detail.type`
         - Type: String
-        - Required: Yes
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -193,7 +185,10 @@ http://localhost:5000/api/v2/users/profile
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `credits`
+      - Type: Integer
+    - `username`
+      - Type: String
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -247,19 +242,22 @@ http://localhost:5000/api/v2/users/profile
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `user`
+      - `user.username`
+        - Type: String
+    - `access_token`
+      - Type: String
+    - `refresh_token`
+      - Type: String
 - `422 - Validation Error`
   - Response schema: `application/json`
     - `detail`
       - `detail.loc`
         - Type: Array of string or integers
-        - Required: Yes
       - `detail.msg`
         - Type: String
-        - Required: Yes
       - `detail.type`
         - Type: String
-        - Required: Yes
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -297,7 +295,8 @@ http://localhost:5000/api/v2/users/profile
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `message`
+      - Type: String
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -335,7 +334,8 @@ http://localhost:5000/api/v2/credits
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `credits`
+      - Type: Integer
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -380,19 +380,17 @@ http://localhost:5000/api/v2/credits/purchase?amount={amount}
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `message`
+      - Type: String
 - `422 - Validation Error`
   - Response schema: `application/json`
     - `detail`
       - `detail.loc`
         - Type: Array of string or integers
-        - Required: Yes
       - `detail.msg`
         - Type: String
-        - Required: Yes
       - `detail.type`
         - Type: String
-        - Required: Yes
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -417,19 +415,21 @@ http://localhost:5000/api/v2/users/locations
 #### Example response
 
 ```
-[
-  {
-    "temperature": 282.14,
-    "city": "Retford",
-    "latitude": 53.31880187988281,
-    "user_id": 1,
-    "timestamp": "2024-04-17T14:08:30.608436",
-    "country": "United Kingdom",
-    "id": 1,
-    "description": "You may want to bring a waterproof jacket and some rain boots if you're heading out in Retford today. Stay dry and cozy!",
-    "longitude": -0.9824000000953674
-  }
-]
+{
+  "locations": [
+    {
+      "temperature": 280.12,
+      "city": "Retford",
+      "latitude": 53.31880187988281,
+      "longitude": -0.9824000000953674,
+      "user_id": 1,
+      "timestamp": "2024-04-17T19:38:08.276103",
+      "country": "United Kingdom",
+      "id": 1,
+      "description": "It's a bit chilly out there in Retford, United Kingdom! Make sure to bundle up with a warm jacket and maybe even a scarf to stay cozy in this cool weather with scattered clouds."
+    }
+  ]
+}
 ```
 
 ##### Response fields
@@ -449,7 +449,25 @@ http://localhost:5000/api/v2/users/locations
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `locations`
+      - `locations.temperature`
+        - Type: Number
+      - `locations.city`
+        - Type: String
+      - `locations.latitude`
+        - Type: Number
+      - `locations.longitude`
+        - Type: Number
+      - `locations.user_id`
+        - Type: Integer
+      - `locations.timestamp`
+        - Type: String
+      - `locations.country`
+        - Type: String
+      - `locations.id`
+        - Type: Integer
+      - `locations.description`
+        - Type: String
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -497,7 +515,8 @@ http://localhost:5000/api/v2/users/locations
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `message`
+      - Type: String
 
 [↑ Return to top](#weather-app-api-documentation)
 
@@ -535,19 +554,17 @@ http://localhost:5000/api/v2/users/locations/{location_id}
 
 - `200 - Successful Response`
   - Response schema: `application/json`
-    - Any
+    - `message`
+      - Type: String
 - `422 - Validation Error`
   - Response schema: `application/json`
     - `detail`
       - `detail.loc`
         - Type: Array of string or integers
-        - Required: Yes
       - `detail.msg`
         - Type: String
-        - Required: Yes
       - `detail.type`
         - Type: String
-        - Required: Yes
 
 [↑ Return to top](#weather-app-api-documentation)
 

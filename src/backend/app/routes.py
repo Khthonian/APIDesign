@@ -267,7 +267,7 @@ def purchase_credits(
 
 
 # Define a route to get the current user's locations
-@router.get("/users/locations")
+@router.get("/users/locations", response_model=schemas.LocationList)
 @limiter.limit("10/minute")
 def get_user_locations(
     request: Request, current_user: user_dependency, db: db_dependency

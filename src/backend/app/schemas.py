@@ -1,4 +1,5 @@
-from typing import List, Optional
+from datetime import datetime
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr
 
@@ -42,8 +43,20 @@ class LocationBase(BaseModel):
     country: str
 
 
+class LocationListing(BaseModel):
+    temperature: Optional[float]
+    city: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    user_id: Optional[int]
+    timestamp: Optional[Union[str, datetime]]
+    country: Optional[str]
+    id: Optional[int]
+    description: Optional[str]
+
+
 class LocationList(BaseModel):
-    locations: List[Optional[dict]]
+    locations: List[Optional[LocationListing]]
 
     class Config:
         arbitrary_types_allowed = True

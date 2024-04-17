@@ -34,7 +34,7 @@ ACCESS_TOKEN_EXPIRE = 30
 limiter = Limiter(key_func=get_remote_address)
 
 # Define authentication configs
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v2/users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v2/users/login")
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -138,7 +138,7 @@ async def register_user(request: Request, db: db_dependency, user: schemas.UserC
 
 
 # Define a route to login the user
-@router.post("/users/token", response_model=schemas.Token)
+@router.post("/users/login", response_model=schemas.Token)
 @limiter.limit("20/minute")
 async def login(
     request: Request,
@@ -164,7 +164,7 @@ async def login(
 def get_user_profile(request: Request, user: user_dependency, db: db_dependency):
     db_user = db.query(models.User).filter(models.User.id == user["id"]).first()
 
-    return {"User": db_user.username, "Credits": db_user.credits}
+    return {"user": db_user.username, "credits": db_user.credits}
 
 
 # Define a route to update the current user's profile
@@ -224,7 +224,7 @@ def update_user_profile(
     )
 
     # Return updated user profile along with new tokens
-    return {"User": user, "access_token": access_token, "refresh_token": refresh_token}
+    return {"user": user, "access_token": access_token, "refresh_token": refresh_token}
 
 
 # Define a route to delete the current user's profile

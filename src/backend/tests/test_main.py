@@ -163,10 +163,10 @@ def test_get_user_profile():
     assert response.status_code == 200
 
     # Verify that the response body contains the expected keys
-    assert response.json()["User"] == "testuser"
+    assert response.json()["user"] == "testuser"
 
     # Verify that the response body contains the expected credit balance
-    assert response.json()["Credits"] == 2000
+    assert response.json()["credits"] == 2000
 
 
 # Unauthorised get user profile test
@@ -206,7 +206,7 @@ def test_update_user_profile():
     assert response.status_code == 200
 
     # Verify that the response body contains the expected content
-    assert response.json()["User"] == {
+    assert response.json()["user"] == {
         "username": "testuserNEW",
         "email": "testNEW@example.com",
     }

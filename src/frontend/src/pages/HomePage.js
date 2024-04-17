@@ -120,7 +120,7 @@ function App() {
       console.log("Current user:", response.data);
 
       // Set the current user in state
-      setLoggedInUser(response.data); // Assuming response.data.User contains the user data
+      setLoggedInUser(response.data);
     } catch (error) {
       setError("Failed to fetch current user.");
     }
@@ -230,7 +230,7 @@ function App() {
       console.log("User profile updated successfully:", response.data);
 
       // Update loggedInUser state with updated user profile
-      setLoggedInUser(response.data.User);
+      setLoggedInUser(response.data.user);
       await displayCurrentUser();
       await fetchUserLocations();
     } catch (error) {

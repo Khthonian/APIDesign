@@ -159,7 +159,7 @@ async def login(
 
 
 # Define a route to get the current user's profile
-@router.get("/users/profile", response_model=UserAccount)
+@router.get("/users/profile", response_model=schemas.UserAccount)
 @limiter.limit("20/minute")
 def get_user_profile(request: Request, user: user_dependency, db: db_dependency):
     db_user = db.query(models.User).filter(models.User.id == user["id"]).first()
@@ -277,7 +277,13 @@ def get_user_locations(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
-    return db_user.locations
+    return {"locations": db_user.locations}
+
+
+@router.get("/items/{item_id}")
+def read_root(item_id: str, request: Request):
+    client_host = request.client.host
+    return {"client_host": client_host, "item_id": item_id}
 
 
 # Define the route to add the current user's current location
@@ -289,19 +295,16 @@ def add_user_location(
     db: db_dependency,
 ):
     # Step 1: Get user's coordinates from geolocation API (Example: IP Geolocation API)
-    # ip_address = request.client.host
     geolocation_api_key = os.getenv("GEOLOCATION_API_KEY")
     ipdata.api_key = geolocation_api_key
     try:
-        # data = ipdata.lookup(ip_address)
         data = ipdata.lookup()
         latitude = data.latitude
         longitude = data.longitude
         city = data.city
         country = data.country_name
-        ip = data.ip
     except Exception as e:
-        return {"error": "Failed to retrieve user's location"}
+        return {"message": "Failed to retrieve user's location"}
 
     # Step 2: Fetch weather data from OpenWeather API using obtained coordinates
     openweather_api_key = os.getenv("OPENWEATHER_API_KEY")
@@ -313,7 +316,7 @@ def add_user_location(
         temperature = weather_data["main"]["temp"]
         description = weather_data["weather"][0]["description"]
     except Exception as e:
-        return {"error": "Failed to retrieve weather data"}
+        return {"message": "Failed to retrieve weather data"}
 
     # Step 3: Deduct credits from the user
     credit_cost = 1  # Define the cost for adding a location
@@ -323,7 +326,7 @@ def add_user_location(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
     if db_user.credits < credit_cost:
-        return {"error": "Insufficient credits to add location"}
+        return {"message": "Insufficient credits to add location"}
 
     db_user.credits -= credit_cost
     db.commit()

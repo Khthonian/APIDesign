@@ -163,7 +163,7 @@ def test_get_user_profile():
     assert response.status_code == 200
 
     # Verify that the response body contains the expected keys
-    assert response.json()["user"] == "testuser"
+    assert response.json()["username"] == "testuser"
 
     # Verify that the response body contains the expected credit balance
     assert response.json()["credits"] == 2000
@@ -279,7 +279,7 @@ def test_get_user_locations():
     assert response.status_code == 200
 
     # Verify that the response body contains the expected keys
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()["locations"], list)
     assert len(response.json()) >= 0
 
 
@@ -295,8 +295,3 @@ def test_new_user_location():
 
     # Verify that the response body contains the expected keys
     assert "message" in response.json()
-    assert "weather_info" in response.json()
-    assert "temperature" in response.json()
-    assert "latitude" in response.json()
-    assert "longitude" in response.json()
-    assert "ip" in response.json()

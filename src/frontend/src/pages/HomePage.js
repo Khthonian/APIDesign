@@ -18,6 +18,11 @@ function App() {
   // Function to handle user registration
   const registerUser = async () => {
     try {
+      if (registerUsername.includes(" ")) {
+        setError("Username must not contain spaces.");
+        return;
+      }
+
       const response = await axios.post(
         "http://localhost:5000/api/v2/users/register",
         {
@@ -28,13 +33,8 @@ function App() {
       );
       console.log("User registered successfully:", response.data);
       setSuccessMessage("Registration successful."); // Set success message
-      setTimeout(() => {
-        setSuccessMessage("Registration successful."); // Clear success message after 10 seconds
-      }, 10000);
     } catch (error) {
-      setTimeout(() => {
-        setError("Registration failed. Please try again.");
-      }, 10000);
+      setError("Registration failed. Please try again.");
     }
   };
 
@@ -64,6 +64,7 @@ function App() {
 
       await displayCurrentUser();
       await fetchUserLocations(); // Fetch user locations after login
+      setSuccessMessage("Login successful.");
     } catch (error) {
       console.error("Login failed:", error.response.data);
     }
@@ -136,8 +137,8 @@ function App() {
           },
         },
       );
-      console.log("User locations:", response.data);
-      setUserLocations(response.data);
+      console.log("User locations:", response.data.locations);
+      setUserLocations(response.data.locations);
     } catch (error) {
       console.error("Failed to fetch user locations:", error.response.data);
     }
@@ -213,6 +214,11 @@ function App() {
   // Function to update user profile
   const updateUserProfile = async () => {
     try {
+      if (updateUsername.includes(" ")) {
+        setError("Username must not contain spaces.");
+        return;
+      }
+
       const response = await axios.put(
         "http://localhost:5000/api/v2/users/profile",
         {

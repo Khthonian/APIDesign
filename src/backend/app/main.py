@@ -9,7 +9,6 @@ from app.routes import router as api_router
 
 Base.metadata.create_all(bind=engine)
 
-
 app = FastAPI(
     title="Weather API",
     version="2.2.0",

@@ -20,7 +20,7 @@ class User(UserBase):
 
 
 class UserUpdate(BaseModel):
-    user: str
+    username: str
 
 
 class UserRefresh(BaseModel):
@@ -40,6 +40,13 @@ class UserAccount(UserBalance):
 class LocationBase(BaseModel):
     city: str
     country: str
+
+
+class LocationList(BaseModel):
+    locations: List[Optional[dict]]
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class LocationCreate(LocationBase):

@@ -182,7 +182,7 @@ def update_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
-    if user.username == db_user.username or user.email == db_user.email:
+    if user.username == db_user.username:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Cannot use current details.",
@@ -199,18 +199,6 @@ def update_user_profile(
                 detail="Username already exists.",
             )
         db_user.username = user.username
-
-    # Check if the new email is unique
-    if user.email is not None:
-        existing_user = (
-            db.query(models.User).filter(models.User.email == user.email).first()
-        )
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Email already exists.",
-            )
-        db_user.email = user.email
 
     db.commit()
 

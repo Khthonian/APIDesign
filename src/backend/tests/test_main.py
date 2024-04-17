@@ -188,7 +188,6 @@ def test_update_user_profile():
     # Define the new user settings
     user_data = {
         "username": "testuserNEW",
-        "email": "testNEW@example.com",
     }
 
     global login_token
@@ -208,7 +207,6 @@ def test_update_user_profile():
     # Verify that the response body contains the expected content
     assert response.json()["user"] == {
         "username": "testuserNEW",
-        "email": "testNEW@example.com",
     }
 
     # Reset user profile settings
@@ -226,7 +224,6 @@ def test_unique_name_update_user_profile():
     # Define the new user settings
     user_data = {
         "username": default_user_data["username"],
-        "email": "testNEW@example.com",
     }
 
     # Make a PUT request to update the user profile
@@ -237,25 +234,6 @@ def test_unique_name_update_user_profile():
     )
 
     # Verify that the response status code is 422 UNPROCESSABLE ENTITY
-    assert response.status_code == 422
-
-
-# Unique username update test
-def test_unique_email_update_user_profile():
-    # Define the new user settings
-    user_data = {
-        "username": "testuserNEW",
-        "email": default_user_data["email"],
-    }
-
-    # Make a PUT request to update the user profile
-    response = client.put(
-        "/api/v2/users/profile",
-        headers={"Authorization": f"Bearer {login_token}"},
-        json=user_data,
-    )
-
-    # Verify that the response status code is 422 UNPROCESSABLE ENTITIY
     assert response.status_code == 422
 
 

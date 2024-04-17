@@ -7,7 +7,6 @@ function App() {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [updateUsername, setUpdateUsername] = useState("");
-  const [updateEmail, setUpdateEmail] = useState("");
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -47,7 +46,7 @@ function App() {
       formData.append("password", loginPassword);
 
       const response = await axios.post(
-        "http://localhost:5000/api/v2/users/token",
+        "http://localhost:5000/api/v2/users/login",
         formData,
         {
           headers: {
@@ -218,7 +217,6 @@ function App() {
         "http://localhost:5000/api/v2/users/profile",
         {
           username: updateUsername,
-          email: updateEmail,
         },
         {
           headers: {
@@ -316,18 +314,12 @@ function App() {
           value={updateUsername}
           onChange={(e) => setUpdateUsername(e.target.value)}
         />
-        <input
-          type="email"
-          placeholder="New Email"
-          value={updateEmail}
-          onChange={(e) => setUpdateEmail(e.target.value)}
-        />
         <button onClick={updateUserProfile}>Update Profile</button>
       </div>
       {loggedInUser ? (
         <div>
-          <h2>Welcome, {loggedInUser.User}</h2>
-          <h2>Credits: {loggedInUser.Credits}</h2>
+          <h2>Welcome, {loggedInUser.user}</h2>
+          <h2>Credits: {loggedInUser.credits}</h2>
           <div>
             <input
               type="number"

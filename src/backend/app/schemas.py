@@ -20,8 +20,7 @@ class User(UserBase):
 
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    email: Optional[EmailStr] = None
+    username: str
 
 
 class LocationBase(BaseModel):

@@ -119,7 +119,7 @@ def test_login_user():
     }
 
     # Make a POST request to login a user
-    response = client.post("/api/v2/users/token", data=user_data)
+    response = client.post("/api/v2/users/login", data=user_data)
 
     global login_token
     login_token = response.json()["access_token"]
@@ -143,7 +143,7 @@ def test_bad_login_user():
     }
 
     # Make a POST request to attempt a login
-    response = client.post("/api/v2/users/token", data=bad_user_data)
+    response = client.post("/api/v2/users/login", data=bad_user_data)
 
     # Verify that the response status code is 401 UNAUTHORIZED
     assert response.status_code == 401

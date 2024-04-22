@@ -7,7 +7,7 @@ function Navbar() {
   return (
     <nav style={{ display: "flex", gap: "10px" }}>
       <Link to="/">Home</Link>
-      <Link to="/docs">Documentations</Link>
+      <Link to="/docs">Documentation</Link>
     </nav>
   );
 }

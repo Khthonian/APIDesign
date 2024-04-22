@@ -14,6 +14,7 @@ This is the documentation for the Weather API.
 - [Getting a User's Locations](#getting-a-users-locations)
 - [Adding a New Location](#adding-a-new-location)
 - [Deleting a User's Location](#deleting-a-users-location)
+- [API Structure Diagram](#api-structure-diagram)
 
 ---
 
@@ -412,6 +413,17 @@ http://localhost:5000/api/v2/users/locations
   - Flow type: `password`
   - Token URL: `api/v2/users/login`
 
+#### Query parameters
+
+- **`page`**
+  - **Type:** Integer
+  - **Required:** No
+  - **Description:** The page number to retrieve.
+- **`limit`**
+  - **Type:** Integer
+  - **Required:** No
+  - **Description:** The number of locations to retrieve per page.
+
 #### Example response
 
 ```
@@ -429,21 +441,24 @@ http://localhost:5000/api/v2/users/locations
       "description": "It's a bit chilly out there in Retford, United Kingdom! Make sure to bundle up with a warm jacket and maybe even a scarf to stay cozy in this cool weather with scattered clouds."
     }
   ]
+
+  "pages": 1
 }
 ```
 
 ##### Response fields
 
 - A list of locations.
-  - `temperature`: The temperature of the location, in Kelvin.
-  - `city`: The name of the location.
-  - `latitude`: The latitude of the user's IP address.
-  - `user_id`: The ID of the user's account.
-  - `timestamp`: The timestamp of the call request.
-  - `country`: The name of the country.
-  - `id`: The ID of the location in the database.
-  - `description`: The AI-generated description message from OpenAI.
-  - `longitude`: The longitude of the user's IP address.
+  - `locations.temperature`: The temperature of the location, in Kelvin.
+  - `locations.city`: The name of the location.
+  - `locations.latitude`: The latitude of the user's IP address.
+  - `locations.user_id`: The ID of the user's account.
+  - `locations.timestamp`: The timestamp of the call request.
+  - `locations.country`: The name of the country.
+  - `locations.id`: The ID of the location in the database.
+  - `locations.description`: The AI-generated description message from OpenAI.
+  - `locations.longitude`: The longitude of the user's IP address.
+- `pages`: The number of pages of locations.
 
 #### Responses
 
@@ -467,6 +482,17 @@ http://localhost:5000/api/v2/users/locations
       - `locations.id`
         - Type: Integer
       - `locations.description`
+        - Type: String
+    - `pages`
+      - Type: Integer
+- `422 - Validation Error`
+  - Response schema: `application/json`
+    - `detail`
+      - `detail.loc`
+        - Type: Array of string or integers
+      - `detail.msg`
+        - Type: String
+      - `detail.type`
         - Type: String
 
 [↑ Return to top](#weather-app-api-documentation)
@@ -569,3 +595,11 @@ http://localhost:5000/api/v2/users/locations/{location_id}
 [↑ Return to top](#weather-app-api-documentation)
 
 ---
+
+## API Structure Diagram
+
+Produced using UML and PlantUML.
+
+![The diagram of the API structure](/api.png)
+
+[↑ Return to top](#weather-app-api-documentation)

@@ -1,0 +1,43 @@
+@startuml
+left to right direction
+
+package "Server" {
+  node "API" {
+    component "API Router" {
+      [Register User]
+      [Login]
+      [Get User Profile]
+      [Update User Profile]
+      [Delete User Profile]
+      [Get User Credits]
+      [Purchase Credits]
+      [Get User Locations]
+      [Add User Location]
+      [Delete User Location]
+    }
+    
+  }
+
+  database "SQLite" {
+    [WeatherDB]
+  }
+}
+
+package "Client" {
+  [Home Page]
+  [Documentation Page]
+}
+
+package "External APIs" {
+  [IPData]
+  [OpenAI]
+  [OpenWeatherMap]
+}
+
+[API Router] <--> [WeatherDB] : Database interactions
+[API Router] <-right-> [Home Page] : Client interactions
+[Add User Location] <-left-> [External APIs] : Third party API interactions
+[Login] <-right-> "Client" : JWT token
+"Client" <-right-> [API Router] : JWT authorisation
+
+@enduml

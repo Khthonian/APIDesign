@@ -295,3 +295,16 @@ def test_new_user_location():
 
     # Verify that the response body contains the expected keys
     assert "message" in response.json()
+
+
+def test_delete_user_location():
+    # Make a DELETE request to delete a user location
+    response = client.delete(
+        "/api/v2/users/locations/1", headers={"Authorization": f"Bearer {login_token}"}
+    )
+
+    # Verify that the response status code is 200 OK
+    assert response.status_code == 200
+
+    # Verify that the response body contains the expected keys
+    assert "message" in response.json()

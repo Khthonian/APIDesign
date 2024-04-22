@@ -57,6 +57,7 @@ class LocationListing(BaseModel):
 
 class LocationList(BaseModel):
     locations: List[Optional[LocationListing]]
+    pages: int
 
     class Config:
         arbitrary_types_allowed = True

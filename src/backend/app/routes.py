@@ -1,17 +1,19 @@
 import os
 from datetime import datetime, timedelta
+from math import ceil
 from typing import Annotated
 
 import ipdata
 import requests
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from openai import OpenAI
 from passlib.context import CryptContext
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app import database, models, schemas
@@ -268,16 +270,35 @@ def purchase_credits(
 
 # Define a route to get the current user's locations
 @router.get("/users/locations", response_model=schemas.LocationList)
-@limiter.limit("10/minute")
+@limiter.limit("100/minute")
 def get_user_locations(
-    request: Request, current_user: user_dependency, db: db_dependency
+    request: Request,
+    current_user: user_dependency,
+    db: db_dependency,
+    page: int = Query(1, ge=1),
+    limit: int = Query(2, ge=1, le=100),
 ):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
-    return {"locations": db_user.locations}
+
+    offset = (page - 1) * limit
+    total_locations = (
+        db.query(models.Location).filter(models.Location.user_id == db_user.id).count()
+    )
+    total_pages = ceil(total_locations / limit)
+    user_locations = (
+        db.query(models.Location)
+        .filter(models.Location.user_id == db_user.id)
+        .order_by(desc(models.Location.timestamp))
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return {"locations": user_locations, "pages": total_pages}
 
 
 # Define the route to add the current user's current location
@@ -313,7 +334,7 @@ def add_user_location(
         return {"message": "Failed to retrieve weather data"}
 
     # Step 3: Deduct credits from the user
-    credit_cost = 400  # Define the cost for adding a location
+    credit_cost = 1  # Define the cost for adding a location
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
         raise HTTPException(
@@ -342,7 +363,6 @@ def add_user_location(
     )
     weather_info = completion.choices[0].message.content
 
-    # Assuming you have a database to store the location
     db_location = models.Location(
         city=city,
         country=country,

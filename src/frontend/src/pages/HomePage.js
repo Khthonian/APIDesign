@@ -14,6 +14,8 @@ function App() {
   const [successMessage, setSuccessMessage] = useState("");
   const [userLocations, setUserLocations] = useState([]);
   const [purchaseAmount, setPurchaseAmount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Function to handle user registration
   const registerUser = async () => {
@@ -63,7 +65,7 @@ function App() {
       setLoggedInUser(response.data);
 
       await displayCurrentUser();
-      await fetchUserLocations(); // Fetch user locations after login
+      await fetchUserLocations(currentPage); // Fetch user locations after login
       setSuccessMessage("Login successful.");
     } catch (error) {
       console.error("Login failed:", error.response.data);
@@ -127,10 +129,10 @@ function App() {
   };
 
   // Function to fetch user locations
-  const fetchUserLocations = async () => {
+  const fetchUserLocations = async (page) => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/v2/users/locations",
+        `http://localhost:5000/api/v2/users/locations?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -139,12 +141,19 @@ function App() {
       );
       console.log("User locations:", response.data.locations);
       setUserLocations(response.data.locations);
+      setTotalPages(response.data.pages);
     } catch (error) {
       console.error("Failed to fetch user locations:", error.response.data);
     }
   };
 
-  // Fucntion to format date
+  // Function to handle pagination
+  const handlePageChange = async (page) => {
+    setCurrentPage(page);
+    fetchUserLocations(page);
+  };
+
+  // Function to format date
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
 
@@ -170,7 +179,7 @@ function App() {
 
   // Function to refresh user locations
   const refreshUserLocations = async () => {
-    await fetchUserLocations();
+    await fetchUserLocations(currentPage);
   };
 
   // Function to handle "Get Weather" button click
@@ -236,7 +245,7 @@ function App() {
       // Update loggedInUser state with updated user profile
       setLoggedInUser(response.data.user);
       await displayCurrentUser();
-      await fetchUserLocations();
+      await fetchUserLocations(currentPage);
     } catch (error) {
       console.error("Failed to update user profile:", error.response.data);
       setError("Failed to update user profile. Please try again.");
@@ -263,9 +272,9 @@ function App() {
   // Run this effect when the component mounts
   useEffect(() => {
     if (loggedInUser) {
-      fetchUserLocations();
+      fetchUserLocations(currentPage);
     }
-  }, [loggedInUser]);
+  }, [loggedInUser, currentPage]);
 
   return (
     <div>
@@ -375,6 +384,21 @@ function App() {
               ))}
             </tbody>
           </table>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span>{`Page ${currentPage} of ${totalPages}`}</span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
         </div>
       ) : (
         <p>Please register or login.</p>

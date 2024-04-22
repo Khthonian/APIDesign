@@ -276,7 +276,7 @@ def get_user_locations(
     current_user: user_dependency,
     db: db_dependency,
     page: int = Query(1, ge=1),
-    limit: int = Query(2, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ):
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
@@ -334,7 +334,7 @@ def add_user_location(
         return {"message": "Failed to retrieve weather data"}
 
     # Step 3: Deduct credits from the user
-    credit_cost = 1  # Define the cost for adding a location
+    credit_cost = 400  # Define the cost for adding a location
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not db_user:
         raise HTTPException(

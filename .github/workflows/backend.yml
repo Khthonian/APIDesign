@@ -5,10 +5,24 @@ on:
     branches:
       - main
       - dev
+    paths:
+      - "src/backend/**"
+
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - "src/backend/**"
 
 env:
   PYTHON_VERSION: "3.11"
   POETRY_VERSION: "1.8.2"
+  ALGORITHM: ${{ secrets.ALGORITHM }}
+  GEOLOCATION_API_KEY: ${{ secrets.GEOLOCATION_API_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
 jobs:
   build:
@@ -29,12 +43,16 @@ jobs:
         with:
           path: ~/.cache/pypoetry
           key: poetry-cache-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ env.POETRY_VERSION }}
+          restore-keys: |
+            poetry-cache-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-
 
       - name: Cache packages
         uses: actions/cache@v3
         with:
           path: ~/.local
           key: poetry-local-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            poetry-local-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-
 
       - name: Install poetry
         run: |
@@ -50,12 +68,6 @@ jobs:
           poetry install --no-root
 
       - name: Set API key as environment variable
-        env:
-          ALGORITHM: ${{ secrets.ALGORITHM }}
-          GEOLOCATION_API_KEY: ${{ secrets.GEOLOCATION_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
           echo "ALGORITHM=$ALGORITHM" >> $GITHUB_ENV
           echo "GEOLOCATION_API_KEY=$GEOLOCATION_API_KEY" >> $GITHUB_ENV

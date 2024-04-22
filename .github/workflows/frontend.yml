@@ -5,6 +5,17 @@ on:
     branches:
       - main
       - dev
+    paths:
+      - "src/frontend/**"
+
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - "src/frontend/**"
+
+env: NODE_VERSION = "21"
 
 jobs:
   build:
@@ -18,7 +29,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "21"
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-cache-${{ runner.os }}-${{ hashFiles('src/frontend/package-lock.json') }}
+          restore-keys: |
+            npm-cache-${{ runner.os }}-
 
       - name: Install dependencies
         run: |

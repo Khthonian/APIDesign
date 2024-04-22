@@ -15,7 +15,8 @@ on:
     paths:
       - "src/frontend/**"
 
-env: NODE_VERSION = "21"
+env:
+  NODE_VERSION: "21"
 
 jobs:
   build:
